@@ -1,0 +1,4 @@
+srv
+cli
+*.o
+filename

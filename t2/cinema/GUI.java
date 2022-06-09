@@ -6,13 +6,12 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 import java.lang.SecurityManager;
 
-public class GUIClient {
+public class GUI {
 
 	public static void main(String args[]) {
 		String seatStr = null;
 		String aux = null;
 		int option = 0;
-		int opcao1;
 
 		Scanner in = new Scanner(System.in);
 		if (System.getSecurityManager() == null) {
