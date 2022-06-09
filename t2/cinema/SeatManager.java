@@ -1,18 +1,49 @@
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.lang.String;
-import javax.swing.JOptionPane;
 
 public class SeatManager {
-	boolean seats[][];
+	public boolean seats[][];
 	String filmName;
 
-	int ROWS = 8;
-	int COLUMNS = 10;
+	int ROWS = 6;
+	int COLUMNS = 5;
 
 	public SeatManager(String filmName) throws RemoteException {
 		seats = new boolean[ROWS][COLUMNS];
 		this.filmName = filmName;
 		initializeSeats();
+	}
+
+	private void initializeSeats() {
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < COLUMNS; j++) {
+				seats[i][j] = false;
+			}
+		}
+	}
+
+	public void markSeat(int row, int column) {
+		seats[row][column] = true;
+	}
+
+	public Integer[] seatStringToTuple(String seat) {
+		var list = new Integer[2];
+		list[0] = this.rowToInt(seat.substring(0, 1));
+		list[1] = Integer.parseInt(seat.substring(1, 2));
+		return list;
+	}
+
+	public ArrayList<String> availableSeats() {
+		var list = new ArrayList<String>();
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < COLUMNS; j++) {
+				if (!seats[i][j]) {
+					list.add(intToRow(i) + Integer.toString(j));
+				}
+			}
+		}
+		return list;
 	}
 
 	private int rowToInt(String row) {
@@ -38,44 +69,27 @@ public class SeatManager {
 		}
 	}
 
-	private void initializeSeats() {
-		for (int i = 0; i < ROWS; i++) {
-			for (int j = 0; j < COLUMNS; j++) {
-				seats[i][j] = false;
-			}
+	private String intToRow(int i) {
+		switch (i) {
+			case 0:
+				return "A";
+			case 1:
+				return "B";
+			case 2:
+				return "C";
+			case 3:
+				return "D";
+			case 4:
+				return "E";
+			case 5:
+				return "F";
+			case 6:
+				return "G";
+			case 7:
+				return "H";
+			default:
+				return "";
 		}
 	}
 
-	private Integer[] seatStringToTuple(String seat) {
-		var list = new Integer[2];
-		list[0] = this.rowToInt(seat.substring(0, 1));
-		list[1] = Integer.parseInt(seat.substring(1, 2));
-		return list;
-	}
-
-	private boolean checkAvailableSeat(int row, int column) {
-		return seats[row][column];
-	}
-
-	private void markSeat(int row, int column) {
-		seats[row][column] = true;
-	}
-
-	public boolean reserveSeat(String seatStr) {
-		var seatInfo = seatStringToTuple(seatStr);
-		var row = seatInfo[0];
-		var column = seatInfo[1];
-		var seatStatus = checkAvailableSeat(row, column);
-		if (!seatStatus) {
-			markSeat(row, column);
-			return true;
-		} else {
-			JOptionPane.showMessageDialog(null, "Erro, assento já foi pego");
-			return false;
-		}
-	}
-
-	public boolean[][] availableSeats() {
-		return seats;
-	}
 }
