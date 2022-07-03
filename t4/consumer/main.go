@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -22,9 +24,17 @@ func calculate(key string, value string) {
 }
 
 func splitInts(value string) []int {
-	integers := [1,2]
+	integers := make([]int, 0)
+	split := strings.Split(value, " ")
+	for _, s := range split {
+		integer, err := strconv.Atoi(s)
+		integers = append(integers, integer)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
-	return
+	return integers
 }
 
 func add(value string) {
@@ -33,7 +43,7 @@ func add(value string) {
 	for _, i := range integers {
 		sum += i
 	}
-	fmt.Printf("Sum result is %d\n", sum)
+	fmt.Printf("-> Sum result is %d\n", sum)
 }
 
 func subtract(value string) {
@@ -44,7 +54,7 @@ func subtract(value string) {
 			sum -= i
 		}
 	}
-	fmt.Printf("Sum result is %d\n", sum)
+	fmt.Printf("-> Subtraction result is %d\n", sum)
 }
 
 func multiply(value string) {
@@ -55,13 +65,22 @@ func multiply(value string) {
 			sum *= i
 		}
 	}
+	fmt.Printf("-> Multiplication result is %d\n", sum)
 }
 
 func divide(value string) {
 	integers := splitInts(value)
+	if len(integers) != 2 {
+		fmt.Printf("Division only allows two operands")
+		return
+	}
+	if integers[1] == 0 {
+		fmt.Println("Cannot divide by zero")
+	}
 	dividend := integers[0]
 	divisor := integers[1]
 	result := dividend / divisor
+	fmt.Printf("-> Division result is %d\n", result)
 }
 
 func main() {
@@ -73,6 +92,7 @@ func main() {
 		MaxBytes: 10e6, // 10MB
 	})
 
+	fmt.Println("Consumer started")
 	for {
 		m, err := r.ReadMessage(context.Background())
 		if err != nil {
@@ -85,7 +105,7 @@ func main() {
 		key := string(m.Key)
 		value := string(m.Value)
 		fmt.Printf("message at topic/partition/offset %v/%v/%v:\nKey: '%s' Value: '%s'\n", topic, partition, offset, key, value)
-
+		calculate(key, value)
 	}
 
 	if err := r.Close(); err != nil {
