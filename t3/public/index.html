@@ -1,1 +1,64 @@
-<a>hello</a>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Calculator</title>
+</head>
+
+<body>
+    <p>Calculator</p>
+
+    <div class="calculator-form">
+        <label for="operations">Select an operation:</label>
+        <select name="operations" id="operations">
+            <option value="sum">Sum</option>
+            <option value="subtraction">Subtract</option>
+            <option value="multiplication">Multiply</option>
+            <option value="division">Divide</option>
+        </select>
+    </div>
+    <div class="calculator-form">
+        <label for="operands">Enter operands: </label>
+        <input type="text" name="operands" id="operands" required placeholder="1,2,3">
+    </div>
+    <div class="calculator-form">
+        <input type="button" onclick="calculate()" value="Calculate!">
+    </div>
+
+    <div class="result-field">
+        <label for="result" id="result">Result: </label>
+    </div>
+
+</body>
+
+<script>
+    function calculate() {
+        var operation = document.getElementById("operations");
+        let operands = document.getElementById("operands").value.split(',');
+        operands = operands.map((x) => parseInt(x));
+
+        var data = new Object();
+        data.operands = operands;
+        data = JSON.stringify(data);
+
+        var url = "https://127.0.0.1:8080/calculate/" + operation.value;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: data
+        })
+            .then(response => response.json())
+            .then(result => response.message)
+
+        console.log(response)
+        console.log(result)
+        console.log(result.message);
+
+    }
+</script>
+
+</html>
