@@ -1,1 +1,1 @@
-t3/bin/* linguist-detectable=false
+t3/bin/** linguist-vendored
