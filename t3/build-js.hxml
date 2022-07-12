@@ -1,0 +1,4 @@
+--js bin/server.js
+--main Server
+-lib hxnodejs
+-lib tink_web
