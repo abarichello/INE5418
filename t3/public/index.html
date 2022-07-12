@@ -27,13 +27,14 @@
     </div>
 
     <div class="result-field">
-        <label for="result" id="result">Result: </label>
+        <label for="result">Result: </label>
+        <label id="result" id="result"></label>
     </div>
 
 </body>
 
 <script>
-    function calculate() {
+    async function calculate() {
         var operation = document.getElementById("operations");
         let operands = document.getElementById("operands").value.split(',');
         operands = operands.map((x) => parseInt(x));
@@ -42,22 +43,17 @@
         data.operands = operands;
         data = JSON.stringify(data);
 
-        var url = "https://127.0.0.1:8080/calculate/" + operation.value;
+        var url = "https://localhost/calculate/" + operation.value;
 
-        fetch(url, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: data
         })
-            .then(response => response.json())
-            .then(result => response.message)
-
-        console.log(response)
-        console.log(result)
-        console.log(result.message);
-
+        const { result } = await response.json()
+        document.getElementById("result").innerText = String(result)
     }
 </script>
 

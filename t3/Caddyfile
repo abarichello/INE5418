@@ -3,6 +3,11 @@ localhost {
     file_server
     rewrite / public/index.html
 
+    # Configura o CORS para aceitar requests de todas as origens
+    header /* {
+        Access-Control-Allow-Origin *
+    }
+
     # Configura o servidor web para repasar as requests para a aplicação web
     # PHP ou JS rodando na porta 8080
     reverse_proxy /* http://localhost:8080
