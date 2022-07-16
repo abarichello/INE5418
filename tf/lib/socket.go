@@ -7,6 +7,7 @@ import (
 )
 
 func CreateConnection(port string) net.Conn {
+	fmt.Println("Creating connection...")
 	connection, err := net.Dial("tcp", "localhost:"+port)
 	if err != nil {
 		panic(err)
@@ -15,6 +16,7 @@ func CreateConnection(port string) net.Conn {
 }
 
 func ReceiveConnection(port string) net.Conn {
+	fmt.Println("Receiving connection...")
 	server, err := net.Listen("tcp", "localhost:"+port)
 	if err != nil {
 		fmt.Println("Error listening: ", err.Error())

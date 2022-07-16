@@ -3,8 +3,10 @@
 package lib
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
-	"io/ioutil"
+	"math"
 	"net"
 )
 
@@ -15,41 +17,63 @@ type Node struct {
 	Socket net.Conn
 }
 
-func Send(node Node, message []byte) {
-	// buf := new(bytes.Buffer)
-	// for clock := range VECTOR_CLOCK {
-	// 	fmt.Printf("Writing %d to buffer\n", clock)
-	// 	binary.Write(buf, binary.LittleEndian, &clock)
-	// }
+type Message struct {
+	VectorClock [3]int32
+	Message     string
+}
 
-	// fmt.Printf("Wrote vector clock to buffer: %s\n", buf.String())
+func Send(node Node, currentNodeId int, message string) {
+	VECTOR_CLOCK[currentNodeId]++
+	pkg := Message{VectorClock: VECTOR_CLOCK, Message: message}
 
-	fmt.Println("Socket sending message:", message)
-	_, err := node.Socket.Write(message)
+	var b bytes.Buffer
+	encoder := gob.NewEncoder(&b)
+	if err := encoder.Encode(pkg); err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Socket sending message: %+v\n", pkg)
+	_, err := node.Socket.Write(b.Bytes())
 	if err != nil {
 		fmt.Println("Error writing data: ", err.Error())
 	}
 }
 
-func Receive(node Node) []byte {
-	message, err := ioutil.ReadAll(node.Socket)
-	fmt.Println("Socket received message: ", message)
+func Receive(node Node, currentNodeId int) string {
+	var pkg Message
+	decoder := gob.NewDecoder(node.Socket)
+	decoder.Decode(&pkg)
 
-	if err != nil {
-		fmt.Println("Error reading data: ", err.Error())
-	}
+	fmt.Printf("Received message: %+v\n", pkg)
 
-	return message
+	// lógica de relógios vetoriais
+	VECTOR_CLOCK[currentNodeId]++
+	receivedVectorClock := pkg.VectorClock
+	VECTOR_CLOCK[0] = maxInt(VECTOR_CLOCK[0], receivedVectorClock[0])
+	VECTOR_CLOCK[1] = maxInt(VECTOR_CLOCK[1], receivedVectorClock[1])
+	VECTOR_CLOCK[2] = maxInt(VECTOR_CLOCK[2], receivedVectorClock[2])
+	fmt.Println("Adjusted received vector clock to:", VECTOR_CLOCK)
+
+	return pkg.Message
 }
 
-func Broadcast(nodes []Node, message []byte) {
-	for node := range nodes {
-		Send(nodes[node], message)
-	}
+// Função que simula uma operação local
+func LocalInstruction(nodeId int) {
+	VECTOR_CLOCK[nodeId]++
 }
 
-func Deliver(nodes []Node) {
-	for node := range nodes {
-		Receive(nodes[node])
-	}
+func maxInt(a, b int32) int32 {
+	return int32(math.Max(float64(a), float64(b)))
 }
+
+// func Broadcast(nodes []Node, message string) {
+// 	for node := range nodes {
+// 		Send(nodes[node], message)
+// 	}
+// }
+
+// func Deliver(nodes []Node) {
+// 	for node := range nodes {
+// 		Receive(nodes[node])
+// 	}
+// }
