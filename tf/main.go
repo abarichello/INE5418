@@ -81,6 +81,7 @@ func main() {
 	fmt.Println("Ready to start connections with other nodes")
 
 	otherNodes := getOtherNodeIds(nodeId)
+
 	nodeConnectionA = lib.Node{Id: otherNodes[0], Socket: lib.ReceiveConnection(getNodePort(nodeId))}
 	time.Sleep(2 * time.Second)
 	nodeConnetionB = lib.Node{Id: otherNodes[1], Socket: lib.CreateConnection(getNodePort(otherNodes[1]))}
