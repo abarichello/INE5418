@@ -3,9 +3,8 @@
 package lib
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
+	"io/ioutil"
 	"net"
 )
 
@@ -17,14 +16,15 @@ type Node struct {
 }
 
 func Send(node Node, message []byte) {
-	buf := new(bytes.Buffer)
-	for clock := range VECTOR_CLOCK {
-		fmt.Printf("Writing %d to buffer\n", clock)
-		binary.Write(buf, binary.LittleEndian, &clock)
-	}
+	// buf := new(bytes.Buffer)
+	// for clock := range VECTOR_CLOCK {
+	// 	fmt.Printf("Writing %d to buffer\n", clock)
+	// 	binary.Write(buf, binary.LittleEndian, &clock)
+	// }
 
-	fmt.Printf("Wrote vector clock to buffer: %s\n", buf.String())
+	// fmt.Printf("Wrote vector clock to buffer: %s\n", buf.String())
 
+	fmt.Println("Socket sending message:", message)
 	_, err := node.Socket.Write(message)
 	if err != nil {
 		fmt.Println("Error writing data: ", err.Error())
@@ -32,14 +32,14 @@ func Send(node Node, message []byte) {
 }
 
 func Receive(node Node) []byte {
-	var msg []byte
-	_, err := node.Socket.Read(msg)
+	message, err := ioutil.ReadAll(node.Socket)
+	fmt.Println("Socket received message: ", message)
 
 	if err != nil {
 		fmt.Println("Error reading data: ", err.Error())
 	}
 
-	return msg
+	return message
 }
 
 func Broadcast(nodes []Node, message []byte) {

@@ -3,18 +3,19 @@ package main
 import (
 	"fmt"
 	"main/lib"
-	"net"
 	"os"
 	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func getNodePort(nodeId int) string {
-	node0Port := os.Getenv("node0_port")
-	node1Port := os.Getenv("node1_port")
-	node2Port := os.Getenv("node2_port")
+var (
+	node0Port = os.Getenv("node0_port")
+	node1Port = os.Getenv("node1_port")
+	node2Port = os.Getenv("node2_port")
+)
 
+func getNodePort(nodeId int) string {
 	switch nodeId {
 	case 0:
 		return node0Port
@@ -25,23 +26,6 @@ func getNodePort(nodeId int) string {
 	}
 	panic("Invalid value")
 }
-
-func createConnection(port string) net.Conn {
-	connection, err := net.Dial("tcp", "localhost:"+port)
-	if err != nil {
-		panic(err)
-	}
-	return connection
-}
-
-// func receiveConnection(ports []string) net.Conn {
-// 	for port := range ports {
-// 		connection, err = net.Listen("tcp", "localhost:"+ports[port])
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 	}
-// }
 
 func getOtherNodeIds(nodeId int) []int {
 	nodes := []int{0, 1, 2}
@@ -55,16 +39,13 @@ func main() {
 	fmt.Printf("Started node with id: %d, total processes: %s\n", nodeId, totalProcesses)
 	fmt.Println("Starting connections with others nodes")
 
-	otherNodes := getOtherNodeIds(nodeId)
-	var nodes []lib.Node
-	for otherNodeId := range otherNodes {
-		port := getNodePort(otherNodeId)
-		node := lib.Node{Id: otherNodeId, Socket: createConnection(port)}
-		nodes = append(nodes, node)
+	// otherNodes := getOtherNodeIds(nodeId)
+	if nodeId == 0 {
+		node0 := lib.Node{Id: 0, Socket: lib.ReceiveConnection(node0Port)}
+		msg := lib.Receive(node0)
+		fmt.Println("Received message", msg)
+	} else if nodeId == 1 {
+		node1 := lib.Node{Id: 1, Socket: lib.CreateConnection(node0Port)}
+		lib.Send(node1, []byte("testing"))
 	}
-
-	socketA := nodes[0]
-	socketB := nodes[1]
-	lib.Send(socketA, []byte("teste"))
-	lib.Send(socketB, []byte("teste"))
 }
