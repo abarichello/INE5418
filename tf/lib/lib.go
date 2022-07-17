@@ -14,7 +14,7 @@ var VECTOR_CLOCK = [3]int32{0, 0, 0}
 
 type Node struct {
 	Id     int
-	Socket net.Conn
+	Socket *net.UDPConn
 }
 
 type Message struct {
