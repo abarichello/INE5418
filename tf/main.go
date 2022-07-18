@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -34,6 +35,7 @@ func getNodePort(nodeId int) string {
 func makeConnection(nodeInt int) lib.Node {
 	outgoingSocket = lib.CreateConnection(getNodePort(nodeInt))
 	node := lib.Node{Id: nodeInt, Socket: outgoingSocket}
+	defer node.Socket.Close()
 	return node
 }
 
@@ -77,8 +79,6 @@ func main() {
 	fmt.Printf("Started node with id: %d, total processes: %s\n", nodeId, totalProcesses)
 	fmt.Println("Ready to start connections with other nodes")
 
-	incomingSocket = lib.ReceiveConnection(getNodePort(nodeId))
-
 	// Replicando o exemplo do slide 23:
 	// https://moodle.ufsc.br/pluginfile.php/5355019/mod_resource/content/2/INE5418_aula18_relogios_logicos.pdf
 	// Id dos nodos: P1 = 0, P2 = 1, P3 = 2
@@ -99,28 +99,31 @@ func main() {
 
 	for i, op := range operations {
 		fmt.Printf("Current operation: %d (%+v)\n", i, op)
-		fmt.Println("Type enter to execute")
-
-		var newline string
-		fmt.Scanln(&newline)
+		time.Sleep(2 * time.Second)
 
 		switch op.Type {
 		case LocalOperation:
 			if op.TargetNodeId == nodeId {
+				fmt.Println("Preparing to execute Local Operation")
 				lib.LocalInstruction(op.TargetNodeId)
 			}
 
 		case SendOperation:
 			if op.SourceNodeId == nodeId {
+				fmt.Println("Preparing to execute Send Operation")
 				targetNode := makeConnection(op.TargetNodeId)
 				lib.Send(targetNode, op.SourceNodeId, "dummy message")
+				defer targetNode.Socket.Close()
 			}
 
 		case ReceiveOperation:
 			if op.TargetNodeId == nodeId {
+				fmt.Println("Preparing to execute Receive Operation")
+				incomingSocket = lib.ReceiveConnection(getNodePort(nodeId), getNodePort(op.SourceNodeId))
 				targetNode := lib.Node{Id: nodeId, Socket: incomingSocket}
 				message := lib.Receive(targetNode, op.TargetNodeId)
 				fmt.Println("Received message:", message, "from node:", op.SourceNodeId)
+				defer targetNode.Socket.Close()
 			}
 		}
 	}

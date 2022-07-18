@@ -29,13 +29,15 @@ func Send(node Node, currentNodeId int, message string) {
 	var b bytes.Buffer
 	encoder := gob.NewEncoder(&b)
 	if err := encoder.Encode(pkg); err != nil {
-		panic(err)
+		fmt.Printf("Error sending message (%s) from node %d by node %d", message, node.Id, currentNodeId)
+		return
 	}
 
 	fmt.Printf("Socket sending message: %+v\n", pkg)
 	_, err := node.Socket.Write(b.Bytes())
 	if err != nil {
 		fmt.Println("Error writing data: ", err.Error())
+		return
 	}
 }
 
